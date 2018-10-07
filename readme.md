@@ -110,3 +110,5 @@ make install
 ~~~
 
 2. Cài đặt trên windows: không cần cài đặt, download file từ github hoặc [tại đây](http://docbao.danghailoc.com/export/docbao-research-cli.zip), giải nén là có thể chạy được
+
+Lưu ý nhỏ trên Windows là Unikey không gõ tiếng Việt được trên commandline, vì vậy các bạn cần sử dụng bộ gõ khác là [Gõ Tiếng Việt](http://www.trankynam.com/gotv/)
