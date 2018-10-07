@@ -7,6 +7,8 @@ Author: hailoc12
 Email: danghailochp@gmail.com  
 Published Date: 7/10/2018  
 
+[Click vào đây để tải bộ cài đặt](http://docbao.danghailoc.com/export/docbao-research-cli.zip)
+
 Note:
 Ứng dụng hoàn toàn miễn phí và sẽ luôn miễn phí. Các phiên bản tốt hơn vẫn sẽ liên tục được cập nhật. Nếu ứng dụng này hữu ích với công việc của bạn, rất mong bạn có thể ủng hộ để tác giả tiếp tục đầu tư cải tiến.
 
