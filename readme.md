@@ -2,10 +2,10 @@
 
 Công cụ dành cho những người có nhu cầu sử dụng [Đọc Báo Theo Từ Khóa](http://docbao.danghailoc.com) với tần suất cao như phóng viên, nhà nghiên cứu, markerter...Hỗ trợ lấy dữ liệu tự động, thực hiện truy vấn nhanh, và xuất dữ liệu ra file dễ dàng
 
-Version: 1.0.0
-Author: hailoc12
-Email: danghailochp@gmail.com
-Published Date: 7/10/2018
+Version: 1.0.0  
+Author: hailoc12  
+Email: danghailochp@gmail.com  
+Published Date: 7/10/2018  
 
 Note:
 Ứng dụng hoàn toàn miễn phí và sẽ luôn miễn phí. Các phiên bản tốt hơn vẫn sẽ liên tục được cập nhật. Nếu ứng dụng này hữu ích với công việc của bạn, rất mong bạn có thể ủng hộ để tác giả tiếp tục đầu tư cải tiến.
