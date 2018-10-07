@@ -21,7 +21,7 @@ Và đừng quên star cho mình nhé :d
 
 1. Hoạt động trên cả windows và linux, chỉ cần down đúng bản là chạy được
 
-2. Tự động cập nhật dữ liệu báo chí quét được bởi hệ thống [Đọc Báo Theo Từ Khóa](http://docbao.danghailoc.com) về máy để xử lý
+2. Tự động cập nhật dữ liệu báo chí quét được bởi hệ thống [Đọc Báo Theo Từ Khóa](http://github.com/hailoc12/docbao) về máy để xử lý
 
 3. Tập lệnh ngắn gọn, phong phú, hỗ trợ chức năng tương đương trên giao diện web. Ví dụ: hiển thị các từ khóa đang là xu hướng, từ khóa mới xuất hiện, liệt kê toàn bộ các bài báo có chứa một từ khóa xác định, mở link báo trong trình duyệt...
 
