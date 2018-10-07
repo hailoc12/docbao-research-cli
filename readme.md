@@ -19,6 +19,8 @@ Mọi đóng góp xin gửi về:
 
 Và đừng quên star cho mình nhé :d
 
+![](https://imgur.com/9cNOTDr)
+
 ## Tính năng nổi bật
 
 1. Hoạt động trên cả windows và linux, chỉ cần down đúng bản là chạy được
