@@ -1,0 +1,431 @@
+#!/usr/bin/env python3
+# PROGRAM : DOCBAO CLI CLIENT
+# Author  : hailoc12
+# Github  : http://github.com/hailoc12/docbao
+# Version : 1.0
+# Modified: 7-10-2018
+
+from utility import * 
+import sys
+import json
+import os
+import webbrowser
+
+# GLOBAL
+if os.name == "posix":
+    OS_NAME = "linux"
+else:
+    OS_NAME = "windows"
+
+VERSION = "1.0"
+HELP_STRING = 'Type "help" for help, "quit" or "exit" to quit app'
+
+BROWSER = ["lynx", "w3m"]
+DATA_URL = "http://docbao.danghailoc.com/export/"
+DATA_PATH = "data"
+EXPORT_PATH = "export"
+
+KEYWORD_LOG_FILENAME = "keyword_freq_log.json"
+DATABASE_LOG_FILENAME = "log_data.json"
+ARTICLE_FILENAME = "article_data.json"
+KEYWORD_FREQ_FILENAME = "keyword_freq_series.json"
+KEYWORD_CATEGORY_FILENAME = "keyword_dict.json"
+NEW_KEYWORD_FILENAME = "new_keyword.json"
+TREND_FILENAME = "trending_keyword.json"
+FAST_GROW_FILENAME = "fast_growing_keyword.json"
+
+DATA_FILES = [ARTICLE_FILENAME,KEYWORD_FREQ_FILENAME,KEYWORD_LOG_FILENAME,DATABASE_LOG_FILENAME,KEYWORD_CATEGORY_FILENAME,NEW_KEYWORD_FILENAME, TREND_FILENAME, FAST_GROW_FILENAME]
+
+MAX_DISPLAY = 10
+
+mem_list = None # memorized list use for chaining commands 
+
+# CLASS
+class DataManager():
+    '''
+    Use: object to get data from all json files
+    '''
+    def __init__(self):
+        self.data = dict()
+        for filename in DATA_FILES:
+            path = get_independent_os_path([DATA_PATH, filename])
+            with open_utf8_file_to_read(path) as stream:
+                self.data[filename] = json.loads(stream.read())
+
+    def count_newspapers(self):
+        return self.data[DATABASE_LOG_FILENAME]["newspaper_count"]
+
+    def count_articles(self):
+        return self.data[DATABASE_LOG_FILENAME]["database_count"]
+    
+    def get_update_time(self):
+        return self.data[KEYWORD_LOG_FILENAME]["time"]
+    
+    def get_trend_keywords(self):
+        result = list()
+        for keyword, count in self.data[TREND_FILENAME].items():
+            result.append({"keyword":keyword,"count":count})
+        return result
+            
+    def get_new_keywords(self):
+        return self.data[NEW_KEYWORD_FILENAME]
+
+    def get_fast_growing_keywords(self):
+        return self.data[FAST_GROW_FILENAME]
+    
+    def get_articles_contain(self, keyword):
+        data = self.data[ARTICLE_FILENAME]["article_list"]
+        result = list()
+        for article in data:
+            topic = article["topic"]
+            if keyword in topic.lower():
+                result.append(article)
+        return result
+
+
+# UTILITY
+def convert_line_ending(str):
+    if OS_NAME == "linux":
+        return str.replace('\r\n', '\n')
+    else:
+        return str.replace('\n', '\r\n')
+
+def convert_file_line_ending(filepath):
+    string = ""
+    with open_utf8_file_to_read(filepath) as stream:
+        string = stream.read()
+        stream.close()
+    with open_utf8_file_to_write(filepath) as stream:
+        stream.write(convert_line_ending(string))
+        stream.close()
+
+def display_list(message, keywords=None, articles=None, full_info=True, filename=None):
+    '''
+    Display list of keywords or articles
+
+    Args:
+    - keywords: list of dict in format {"keyword":keyword, "count":count}
+    - articles: list of dict in format {"topic": topic, "href": href, "newspaper": newspaper, "publish-time": publish-time, "update-time":update-time}
+    '''
+    print()
+    print(message)
+    print()
+    total = 0
+    display = ""
+    if keywords is None:
+        total = len(articles)
+        display = "articles"
+    else:
+        total = len(keywords)
+        display = "keywords"
+
+    stdout = None
+    stream = None
+    if filename is not None:
+        stdout = sys.stdout
+        path = get_independent_os_path([EXPORT_PATH, filename])
+        stream = open_utf8_file_to_write(path)
+        sys.stdout = stream
+    
+    count = 0
+    
+    for i in range(total):
+        count += 1
+        if display == "keywords":
+            line = "%s. %s (%s)" % (str(count), keywords[i]["keyword"], keywords[i]["count"])
+            print(line)
+        else:
+            line = "%s. %s (%s)" % (str(count), articles[i]["topic"], articles[i]["newspaper"])
+            print(line)
+            if full_info == True:
+                print("link     : %s" % articles[i]["href"])
+                print("published: %s" % articles[i]["publish_time"])
+                print("crawled  : %s" % articles[i]["update_time"])
+
+        print()
+
+        if count == MAX_DISPLAY and filename is None:
+            print()
+            if input("Do you want to show next %s results (y/n) ?: " % MAX_DISPLAY) in ["n", "N"]:
+                return 0
+                
+    print()
+    
+    print("There are %s %s" % (str(total), display))
+
+    if stream is not None:
+        stream.close()
+        sys.stdout = stdout
+    
+def display_file(filename):
+    '''
+    Display file content to screen
+    '''
+    count = 0
+    with open_utf8_file_to_read(filename) as stream:
+        while(True):
+            print(convert_line_ending(stream.readline()))
+            count += 1
+            if count == MAX_DISPLAY:
+                if input("Do you want to display next lines (y/n): ") in ['n', "N"]:
+                    break
+                else:
+                    count = 0
+        stream.close()
+
+def fetch_json_data(json_name):
+    '''
+    Download json file to local data folder
+    '''
+    json_url = DATA_URL + json_name 
+    data = json.loads(read_url_source_as_html(json_url))
+    path = get_independent_os_path([DATA_PATH, json_name])
+    with open_utf8_file_to_write(path) as stream:
+        json.dump(data, stream)
+        stream.close()
+    return data
+
+def update_data():
+    '''
+    Check if local data is updated. If not, download new data from server
+    '''
+    ERROR_MESSAGE = "There are errors in downloading data. Please check internet connection or local data might be not updated"
+
+    log_path = get_independent_os_path([DATA_PATH, KEYWORD_LOG_FILENAME])
+    # check if local data is updated
+    if os.path.exists(log_path):
+        with open_utf8_file_to_read(log_path) as stream:
+            data = json.loads(stream.read())
+            local_iterator = data["iterator"]
+            stream.close()
+        try:
+            data = fetch_json_data(KEYWORD_LOG_FILENAME)
+        except:
+            input(ERROR_MESSAGE)
+            
+        online_iterator = data["iterator"]
+        if local_iterator == online_iterator:
+            # is updated
+            return 0
+
+    # not updated. Update data
+    try: 
+        print("Have new data. Updating......")
+        count = 0
+        for filename in DATA_FILES:
+            fetch_json_data(filename)
+            count += 1
+            print("%s %% downloaded" % str(int(count*100/len(DATA_FILES))))
+    except:
+        input(ERROR_MESSAGE)
+        
+def choice_dialog(message, choices):
+    for i in range(len(choices)):
+        print("%s. %s" % (str(i+1), choices[i]))
+    try:
+        print()
+        choice = int(input(message))
+        if choice <= 0 or choice > len(choices):
+            choice = -1
+    except:
+        choice = -1
+    print()
+    return choice-1 #index from 0
+
+def extract_args(args):
+    '''
+    extract index or keyword from arguments
+
+    arg:
+    - args: list of arguments of command
+    
+    output: index (int) or keyword (str) or None if fail
+    ''' 
+    arg = " ".join(args).strip()
+    try:
+        index = int(arg) - 1 #index start from 0
+        if mem_list is not None:
+            if index >=0 and index < len(mem_list):
+                return index
+            else:
+                print("Must provide an index between 1..%s" % str(len(mem_list)))
+        else:
+            print('There are no list to use index. Use command "show" to create list')
+    except:
+        keyword = arg 
+        return keyword
+    return None
+     
+def open_url_in_browser(url):
+    driver = webbrowser.get()
+    driver.open(url)
+
+def process_command(command, args):
+    ''' 
+    Execute user command
+    
+    Arguments: 
+        command is string 
+        args is a list of arguments
+    ''' 
+    global mem_list
+
+    ERROR_MESSAGE = "Unknown command. %s" % HELP_STRING
+
+    command = command.lower()
+
+    if command == "help":
+        display_file("help.txt")
+    elif command in ["quit", "exit"]:
+         exit()   
+    elif command in ["show"]:
+        choice = ""
+        if len(args) == 0:
+           choices = ["trends", "new", "growing"]
+           choice = choice_dialog("Your choice: ", choices)
+           if choice >= 0:
+               result = choices[choice]
+        else:
+           result = args[0]
+        
+        if result == "trends":
+            mem_list = data_manager.get_trend_keywords()
+            display_list("Keywords that are trends", mem_list) 
+        elif result == "new":
+            mem_list = data_manager.get_new_keywords()
+            display_list("Keywords that has appeared recently", mem_list) 
+        elif result == "growing":
+            mem_list = data_manager.get_fast_growing_keywords()
+            display_list("Keywords that are growing fast", mem_list) 
+        else:
+            print(ERROR_MESSAGE)
+    elif command == "search":
+        if len(args) == 0:
+            print("Must provide a keyword or an index to search command")
+        else:
+            option = extract_args(args)
+            if option is not None:
+                keyword = ""
+                if type(option) is  int:
+                    keyword = mem_list[option]["keyword"] 
+                else:
+                    keyword = option
+                full_info = False
+                if input("Display full information (y/n): ") in ["y", "Y"]: full_info = True
+                mem_list = data_manager.get_articles_contain(keyword) 
+                display_list('Articles that contain "%s":' % keyword, articles =mem_list, full_info = full_info) 
+    elif command == "open":
+        ERROR_MESSAGE = "Must provide an index to open command"
+        if len(args) == 0:
+            print(ERROR_MESSAGE)
+        else:
+            option = extract_args(args)
+            if option is not None:
+                article = None
+                if type(option) is int:
+                    article = mem_list[option] 
+                    if "href" in article:
+                        open_url_in_browser(article['href'])
+                    else:
+                        print("Must use search commmand before open commmand")
+                else:
+                    print(ERROR_MESSAGE)
+            else:
+                print(ERROR_MESSAGE)
+ 
+    elif command == "export":
+        if len(args) != 1:
+            print("Must provide a filename to export to")
+        else:
+            if mem_list is None:
+                print("No result to export. Use show or search command first")
+            else:
+                choices = ["text"]
+                index = choice_dialog("Format to export: ", choices)
+                choice = choices[index].lower()
+                filename = args[0]
+                if choice == "text":
+                    full_info = False
+                    if input("Write result with full information (y/n): ") in ['y', 'Y']:
+                        full_info = True
+                    if len(mem_list) > 0 and "keyword" in mem_list[0]:
+                       display_list('Export data from Docbao CLI Client', keywords = mem_list, full_info = full_info, filename = filename) 
+                    else:
+                       display_list('Export data from Docbao CLI Client', articles = mem_list, full_info = full_info, filename = filename) 
+ 
+                    print()
+                    path = get_independent_os_path([EXPORT_PATH, filename])
+                    convert_file_line_ending(path)
+                    print("Finish exporting result to %s" % path)
+                    print()
+    
+    elif command == "read":
+        if len(args) != 1:
+            print("Must provide a filename to display from")
+        else:
+            choices = ["plain text", "other"]
+            index = choice_dialog("File format to read: ", choices)
+            choice = choices[index].lower()
+            filename = get_independent_os_path([EXPORT_PATH, args[0]])
+            if choice == "plain text":
+                display_file(filename)
+            elif choice == "other":
+                open_url_in_browser(filename)
+        print()
+        print("Finish display %s " % args[0])
+        print()
+    
+    else:
+        print(ERROR_MESSAGE)
+# MAIN PROGRAM
+
+# Check if need folder exist
+if not os.path.exists(DATA_PATH):
+    try: 
+        print("Creating %s folder" % DATA_PATH)
+        os.mkdir(DATA_PATH)
+    except:
+        print("Can't create %s folder" % DATA_PATH)
+        
+if not os.path.exists(EXPORT_PATH):
+    try:
+        print("Creating %s folder" % EXPORT_PATH)
+        os.mkdir(EXPORT_PATH)
+    except:
+        print("Can't create %s folder" %  EXPORT_PATH)
+    
+print("DOCBAO CLI CLIENT %s" % VERSION)
+ 
+update_data()
+data_manager = DataManager()
+
+print("Newspaper: %s"  % data_manager.count_articles())
+print("Articles : %s"  % data_manager.count_newspapers())
+print("Updated  : %s"  % data_manager.get_update_time())
+
+print(HELP_STRING)
+
+# Check if runned with arguments
+if len(sys.argv) >= 2: #have arguments
+    args = [x.replace('"', '').strip() for x in sys.argv]
+    if args[0] in ["python", "python3", "python2", "bash"]: # run with source code
+        if len(sys.argv) >=4: # have command args
+            process_command(args[2], args[3:])
+        else:
+            process_command(args[2], [])
+    else:
+        if len(sys.argv) >=3: # have command args
+            process_command(args[1], args[2:])
+        else:
+            process_command(args[1], [])
+    exit()
+
+# No arguments.Run docbao shell
+while (True):
+    # prompt user to command
+    args = [x.strip() for x in input("> ").replace('"', '').split()]
+    if len(args) >= 2:
+        process_command(args[0], args[1:])
+    elif len(args) ==1:
+        process_command(args[0], [])
+
