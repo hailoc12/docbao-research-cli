@@ -19,7 +19,10 @@ Mọi đóng góp xin gửi về:
 
 Và đừng quên star cho mình nhé :d
 
-![](https://imgur.com/9cNOTDr)
+[Imgur](https://i.imgur.com/9cNOTDr.png)
+
+
+[Imgur](https://i.imgur.com/9cNOTDr.png)
 
 ## Tính năng nổi bật
 
@@ -34,6 +37,8 @@ Và đừng quên star cho mình nhé :d
 5. Hỗ trợ mở link báo bằng trình duyệt có sẵn trong máy
 
 6. Có thể nhập lệnh thông qua chế độ shell của tool hoặc từ command line
+
+
 
 ## Hướng dẫn sử dụng
 
