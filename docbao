@@ -258,7 +258,11 @@ def choice_dialog(message, choices):
         print("%s. %s" % (str(i+1), choices[i]))
     try:
         print()
-        choice = int(input(message))
+        
+        user_input = ''
+        while not user_input.isdigit():
+            user_input = input(message)
+        choice = int(user_input)
         if choice <= 0 or choice > len(choices):
             choice = -1
     except:
