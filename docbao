@@ -21,7 +21,7 @@ if os.name == "posix":
 else:
     OS_NAME = "windows"
 
-VERSION = "1.0"
+VERSION = "1.1"
 HELP_STRING = 'Type "help" for help, "quit" or "exit" to quit app'
 BROWSER = ["lynx", "w3m"]
 
