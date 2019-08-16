@@ -89,7 +89,7 @@ class DataManager():
         pass
     
     def get_update_time(self):
-        return self.data[KEYWORD_LOG_FILENAME]["time"]
+        return self.data[DATABASE_LOG_FILENAME]["update_time"]
     
     def get_trend_keywords(self):
         result = list()
