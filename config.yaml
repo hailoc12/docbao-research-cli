@@ -1,4 +1,4 @@
 DATA_URL: "https://theodoibaochi.com"
-SEARCH_API: "http://207.148.117.167:5000/v1/search"
+SEARCH_API: "http://theodoibaochi.ap.ngrok.io/v1/search"
 AUTH_TOKEN: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1NjU4ODc0NzUsImV4cCI6MTY1MjI4NzQ4MCwic3ViIjoidGhlb2RvaWJhb2NoaSJ9.M9I01fkn-Qu34UTR-9UkMIGC-QSG201T7Hcz4AQmR74"
 
