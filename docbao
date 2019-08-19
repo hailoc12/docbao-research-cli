@@ -199,23 +199,23 @@ def view_article(id):
         print("NEWSPAPER: %s" % article['newspaper'])
         print("PUBLISH: %s" % article['publish_time'])
         print()
-        print("DESCRIPTION: %s" % article['sapo'])
-        print()
-        input("Press ENTER to continue")
-        clear_screen()
-        print("MAIN CONTENT")
-        print()
-        count = 0
-        for content in article['content']:
-            print(content)
+        if len(article['topic'].split()) <= 50: # newspaper article not facebook post
+            print("DESCRIPTION: %s" % article['sapo'])
             print()
-            count+=1
-            if count % 6 == 0:
-                choice = input("Press ENTER to continue reading. 'c' or 'C' to cancel")
-                clear_screen()
-                if choice in ['c', 'C']:
-                    break
-
+            input("Press ENTER to continue")
+            clear_screen()
+            print("MAIN CONTENT")
+            print()
+            count = 0
+            for content in article['content']:
+                print(content)
+                print()
+                count+=1
+                if count % 6 == 0:
+                    choice = input("Press ENTER to continue reading. 'c' or 'C' to cancel")
+                    clear_screen()
+                    if choice in ['c', 'C']:
+                        break
         print()
 
 def display_list(message, keywords=None, articles=None, full_info=True, filename=None):
