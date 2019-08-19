@@ -10,6 +10,7 @@ from utility import *
 import sys
 import json
 import os
+from os import system
 import webbrowser
 import yaml
 import jsonpickle
@@ -32,6 +33,7 @@ with open_utf8_file_to_read('./config.yaml') as stream:
 
 DATA_URL = config['DATA_URL'] + '/export/' 
 SEARCH_API = config['SEARCH_API']
+GET_ARTICLE_API = config['GET_ARTICLE_API']
 AUTH_TOKEN = config['AUTH_TOKEN']
 
 DATA_PATH = "data"
@@ -47,7 +49,7 @@ FAST_GROW_FILENAME = "fast_growing_keyword.json"
 
 DATA_FILES = [ARTICLE_FILENAME,KEYWORD_FREQ_FILENAME,KEYWORD_LOG_FILENAME,DATABASE_LOG_FILENAME,KEYWORD_CATEGORY_FILENAME,NEW_KEYWORD_FILENAME, TREND_FILENAME, FAST_GROW_FILENAME]
 
-MAX_DISPLAY = 15
+MAX_DISPLAY = 12
 
 mem_list = None # memorized list use for chaining commands 
 
@@ -68,6 +70,17 @@ class DataManager():
 
     def count_articles(self):
         return self.data[DATABASE_LOG_FILENAME]["database_count"]
+
+    def get_article(self, id):
+        API_url = GET_ARTICLE_API + id
+        data = jsonpickle.dumps({})
+        headers = {"Content-type": "application/json", "Authorization": "Bearer " + AUTH_TOKEN}
+        response = requests.get(API_url, data=data, headers=headers)
+        if response.status_code  == 200:
+            result = jsonpickle.decode(response.content)
+            return result
+        else:
+            return None
 
     def search_articles(self, search_string, full_search):
         API_url = SEARCH_API
@@ -114,6 +127,9 @@ class DataManager():
 
 
 # UTILITY
+def clear_screen():
+    system("clear")
+
 def convert_line_ending(str):
     if OS_NAME == "linux":
         return str.replace('\r\n', '\n')
@@ -128,6 +144,77 @@ def convert_file_line_ending(filepath):
     with open_utf8_file_to_write(filepath) as stream:
         stream.write(convert_line_ending(string))
         stream.close()
+
+
+def export_article(article, filename):
+    """
+    Export Article Content to File
+    :input:
+        article: article dict
+    :output:
+        True: ok
+        None: fail
+    """
+    while True:
+    #try:
+        stdout_backup = sys.stdout
+        stream = open_utf8_file_to_write(get_independent_os_path([EXPORT_PATH, filename])) 
+        if stream:
+            sys.stdout = stream
+
+            print("TOPIC: %s" % article['topic'])
+            print("NEWSPAPER: %s" % article['newspaper'])
+            print("PUBLISH: %s" % article['publish_time'])
+            print()
+            print("DESCRIPTION: %s" % article['sapo'])
+            print()
+            print("MAIN CONTENT")
+            print()
+            count = 0
+            for content in article['content']:
+                print(content)
+                print()
+            stream.close()
+            sys.stdout = stdout_backup
+            return True
+        else:
+            return None
+    #except:
+    #    return None
+
+
+def view_article(id):
+    """
+    View article fullcontent
+    :input:
+        id
+    """
+    global data_manager
+    article = data_manager.get_article(id)
+    if article:
+        clear_screen()
+        print("TOPIC: %s" % article['topic'])
+        print("NEWSPAPER: %s" % article['newspaper'])
+        print("PUBLISH: %s" % article['publish_time'])
+        print()
+        print("DESCRIPTION: %s" % article['sapo'])
+        print()
+        input("Press ENTER to continue")
+        clear_screen()
+        print("MAIN CONTENT")
+        print()
+        count = 0
+        for content in article['content']:
+            print(content)
+            print()
+            count+=1
+            if count % 6 == 0:
+                choice = input("Press ENTER to continue reading. 'c' or 'C' to cancel")
+                clear_screen()
+                if choice in ['c', 'C']:
+                    break
+
+        print()
 
 def display_list(message, keywords=None, articles=None, full_info=True, filename=None):
     '''
@@ -167,9 +254,9 @@ def display_list(message, keywords=None, articles=None, full_info=True, filename
         else:
             line = "%s. %s (%s)" % (str(count), articles[i]["topic"], articles[i]["newspaper"])
             print(line)
+            print("   published: %s" % articles[i]["publish_time"])
             if full_info == True:
                 print("link     : %s" % articles[i]["href"])
-                print("published: %s" % articles[i]["publish_time"])
                 print("crawled  : %s" % articles[i]["update_time"])
 
         print()
@@ -191,6 +278,7 @@ def display_file(filename):
     '''
     Display file content to screen
     '''
+    clear_screen()
     count = 0
     with open_utf8_file_to_read(filename) as stream:
         while(True):
@@ -200,6 +288,7 @@ def display_file(filename):
                 if input("Do you want to display next lines (y/n): ") in ['n', "N"]:
                     break
                 else:
+                    clear_screen()
                     count = 0
         stream.close()
 
@@ -392,13 +481,46 @@ def process_command(command, args):
                     print(ERROR_MESSAGE)
             else:
                 print(ERROR_MESSAGE)
- 
-    elif command == "export":
-        if len(args) != 1:
-            print("Must provide a filename to export to")
+    elif command == "view":
+        ERROR_MESSAGE = "Must provide an index to open command"
+        if len(args) == 0:
+            print(ERROR_MESSAGE)
         else:
+            option = extract_args(args)
+            if option is not None:
+                article = None
+                if type(option) is int:
+                    article = mem_list[option] 
+                    if "id" in article:
+                        view_article(article['id'])
+                    else:
+                        print("Must use search commmand before view commmand")
+                else:
+                    print(ERROR_MESSAGE)
+            else:
+                print(ERROR_MESSAGE)
+    elif command == "memory":
+        if mem_list:
+            clear_screen()
+            if len(args) == 1:
+                full_info = args[0] == "full" 
+            else:
+                full_info = False
+
+            if "keyword" in mem_list[0]:
+                display_list("View last displayed list", keywords = mem_list, full_info = full_info, filename = None)
+            else:
+                display_list("View last displayed list", articles = mem_list, full_info = full_info, filename = None)
+        else:
+            print("No recent list to view. Use show, list or search command first")
+    elif command == "clear":
+        clear_screen()
+    elif command == "export":
+        if len(args) == 0:
+            print("Must provide a filename to export to")
+        elif len(args) == 1: # export article list to file 
             if mem_list is None:
-                print("No result to export. Use show or search command first")
+                print("No result to export. Use show, list or search command first")
             else:
                 choices = ["text"]
                 index = choice_dialog("Format to export: ", choices)
@@ -418,6 +540,23 @@ def process_command(command, args):
                     convert_file_line_ending(path)
                     print("Finish exporting result to %s" % path)
                     print()
+        elif len(args) == 2: # export article content to file
+            if mem_list is None:
+                print("No result to export. Use show or search command first")
+            else:
+                article_id = mem_list[int(args[0])-1]['id']
+                filename = args[1]
+                article = data_manager.get_article(article_id)
+                if article:
+                    print("Exporting article content to file")
+                    print("Article: %s" % article['topic'])
+                    print("Filename: %s" % filename)
+                        
+                if export_article(article, filename):
+                    print("Finish exporting article content to %s" % filename)
+                else:
+                    print("Export error")
+                
     
     elif command == "read":
         if len(args) != 1:
@@ -439,6 +578,7 @@ def process_command(command, args):
         print(ERROR_MESSAGE)
 # MAIN PROGRAM
 
+clear_screen()
 # Check if need folder exist
 if not os.path.exists(DATA_PATH):
     try: 

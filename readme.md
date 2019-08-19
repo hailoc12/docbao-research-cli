@@ -59,18 +59,27 @@ show [trends/new/growing]
 list [keyword/index]
 :liệt kê các bài báo có chứa từ khóa keyword hoặc vị trí của từ khóa trong danh sách trả về của lệnh show:
 
+view [index]:
+:đọc bài báo có vị trí index trong danh sách kết quả của search, list ngay trong terminal
+
 open index
-:mở bài báo ở vị trí index trong danh sách kết quả của lệnh search:
-:để dùng lệnh open, cần cài đặt CLI browser như lynx, w3m
+:đọc bài báo tương tự lệnh view nhưng trong browser
+:Trong Windows, để dùng lệnh open, cần cài đặt CLI browser như lynx, w3m
 
 export filename
 :xuất kết quả của các lệnh show, list, search trước đó ra file text để sử dụng về sau:
+
+export index filename
+:xuất nội dung của bài báo ở vị trí index ra file text để sử dụng
 
 read filename
 :mở file text đã export:
 
 update
 :update dữ liệu
+
+memory [full]
+:hiển thị lại danh sách kết quả của lệnh search/show/list gần nhất
 
 help
 :mở danh sách tra cứu lệnh:
@@ -118,11 +127,12 @@ read hau_due_mat_troi.txt
 ~~~
 
 
-## Cài đặt và sử dụng
+## Cài đặt
+1. Cài đặt trên linux
 
 ~~~
 git clone http://github.com/hailoc12/docbao-research-cli
 cd ~/docbao-research-cli/linux
-./docbao
+sudo make install
 ~~~
 
