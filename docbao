@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+
 # PROGRAM : DOCBAO CLI CLIENT
 # Author  : hailoc12
 # Github  : http://github.com/hailoc12/docbao
@@ -333,6 +335,9 @@ def update_data(force=False):
         if force:
             print("Updating data.......")
         else:
+            choice = input("Have new data, do you want to update now (y/n) ?")
+            if choice in ['n', 'N']:
+                return None
             print("Have new data. Updating......")
         count = 0
         for filename in DATA_FILES:
