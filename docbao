@@ -199,7 +199,7 @@ def view_article(id):
         print("NEWSPAPER: %s" % article['newspaper'])
         print("PUBLISH: %s" % article['publish_time'])
         print()
-        if len(article['topic'].split()) <= 50: # newspaper article not facebook post
+        if len(article['topic'].split()) <= 90: # newspaper article not facebook post
             print("DESCRIPTION: %s" % article['sapo'])
             print()
             input("Press ENTER to continue")
