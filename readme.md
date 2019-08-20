@@ -132,7 +132,15 @@ read hau_due_mat_troi.txt
 
 ~~~
 git clone http://github.com/hailoc12/docbao-research-cli
-cd ~/docbao-research-cli/linux
-sudo make install
+cd ~/docbao-research-cli
+./install.sh
 ~~~
+
+2. Chạy công cụ
+~~~
+cd ~/docbao-research-cli  
+./docbao  
+~~~
+
+
 
