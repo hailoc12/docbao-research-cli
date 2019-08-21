@@ -85,24 +85,34 @@ class DataManager():
             return None
 
     def search_articles(self, search_string, full_search):
-        API_url = SEARCH_API
-        data = jsonpickle.dumps({'search': search_string, 'full_search': full_search})
-        headers = {"Content-type": "application/json", "Authorization": "Bearer " + AUTH_TOKEN}
-        response = requests.get(API_url, data=data, headers=headers)
-        if response.status_code  == 200:
-            result= jsonpickle.decode(str(response.content, encoding="utf-8"))
-            if 'posts' in result: 
-                return result['posts'] 
-            else:
-                return None
+        if full_search:
+            API_url = SEARCH_API
+            data = jsonpickle.dumps({'search': search_string, 'full_search': full_search})
+            headers = {"Content-type": "application/json", "Authorization": "Bearer " + AUTH_TOKEN}
+            response = requests.get(API_url, data=data, headers=headers)
+            if response.status_code  == 200:
+                result= jsonpickle.decode(str(response.content, encoding="utf-8"))
+                if 'posts' in result: 
+                    return result['posts'] 
+                else:
+                    return None
 
+            else:
+                print("Error in updating category. Error code: %s" % str(response.status_code))
+                print("Error data below")
+                print(data)
+                return False
+            pass
         else:
-            print("Error in updating category. Error code: %s" % str(response.status_code))
-            print("Error data below")
-            print(data)
-            return False
-        pass
-    
+            data = self.data[ARTICLE_FILENAME]["article_list"]
+            result = list()
+            for article in data:
+                topic = article['topic']
+                if check_contain_filter(topic, search_string):
+                    result.append(article)
+            return result
+            
+        
     def get_update_time(self):
         return self.data[DATABASE_LOG_FILENAME]["update_time"]
     
@@ -195,27 +205,34 @@ def view_article(id):
     article = data_manager.get_article(id)
     if article:
         clear_screen()
-        print("TOPIC: %s" % article['topic'])
-        print("NEWSPAPER: %s" % article['newspaper'])
-        print("PUBLISH: %s" % article['publish_time'])
-        print()
         if len(article['topic'].split()) <= 90: # newspaper article not facebook post
+            print("TOPIC: %s" % article['topic'])
+            print("NEWSPAPER: %s" % article['newspaper'])
+            print("PUBLISH: %s" % article['publish_time'])
+            print()
             print("DESCRIPTION: %s" % article['sapo'])
             print()
-            input("Press ENTER to continue")
-            clear_screen()
-            print("MAIN CONTENT")
+            content_list = article['content']
+        else:
+            print("KOL: %s" % article['newspaper'])
+            print("PUBLISH: %s" % article['publish_time'])
             print()
-            count = 0
-            for content in article['content']:
-                print(content)
-                print()
-                count+=1
-                if count % 6 == 0:
-                    choice = input("Press ENTER to continue reading. 'c' or 'C' to cancel")
-                    clear_screen()
-                    if choice in ['c', 'C']:
-                        break
+            content_list = [x.strip() for x in article['topic'].split('\n') if x.strip() != '']
+ 
+        input("Press ENTER to continue")
+        clear_screen()
+        print("MAIN CONTENT")
+        print()
+        count = 0
+        for content in content_list:
+            print(content)
+            print()
+            count+=1
+            if count % 6 == 0:
+                choice = input("Press ENTER to continue reading. 'c' or 'C' to cancel")
+                clear_screen()
+                if choice in ['c', 'C']:
+                    break
         print()
 
 def display_list(message, keywords=None, articles=None, full_info=True, filename=None):

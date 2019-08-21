@@ -7,6 +7,36 @@ import os
 import urllib.request
 
 # UTILITY FUNCTION
+def check_contain_filter(topic, contain_filter):
+    '''
+    function
+    --------
+    check if topic satisfiy contain_filters in format "a,b,c ; x,y,z" means (a or b or c) and (x or y or z)
+    :input:
+        topic (string|list): string|list to search
+    '''
+    if isinstance(topic, list):
+        content_string = [x.lower() for x in topic]
+    else:
+        content_string = topic.lower()
+    search_string = contain_filter.lower()
+
+    and_terms_satisfy = True
+    for and_terms in search_string.split(';'):
+        or_term_satisfy = False
+        for or_term in and_terms.split(','):
+            if or_term.strip() in content_string: # current or_term is in search_string
+                or_term_satisfy = True
+                break
+        if not or_term_satisfy: # some and_term doesn't in search_string
+            and_terms_satisfy = False
+            break
+
+    if and_terms_satisfy:
+        return True
+    else:
+        return False
+
 def get_os_name():
     if os.name == "posix":
         return "linux"
