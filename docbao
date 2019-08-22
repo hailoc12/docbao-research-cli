@@ -51,7 +51,7 @@ FAST_GROW_FILENAME = "fast_growing_keyword.json"
 
 DATA_FILES = [ARTICLE_FILENAME,KEYWORD_FREQ_FILENAME,KEYWORD_LOG_FILENAME,DATABASE_LOG_FILENAME,KEYWORD_CATEGORY_FILENAME,NEW_KEYWORD_FILENAME, TREND_FILENAME, FAST_GROW_FILENAME]
 
-MAX_DISPLAY = 12
+MAX_DISPLAY = 10
 
 mem_list = None # memorized list use for chaining commands 
 
@@ -280,7 +280,7 @@ def display_list(message, keywords=None, articles=None, full_info=True, filename
 
         print()
 
-        if count == MAX_DISPLAY and filename is None:
+        if count % MAX_DISPLAY == 0 and filename is None:
             print()
             if input("Do you want to show next %s results (y/n) ?: " % MAX_DISPLAY) in ["n", "N"]:
                 return 0
@@ -303,7 +303,7 @@ def display_file(filename):
         while(True):
             print(convert_line_ending(stream.readline()), end='')
             count += 1
-            if count == MAX_DISPLAY:
+            if count % MAX_DISPLAY == 0:
                 if input("Do you want to display next lines (y/n): ") in ['n', "N"]:
                     break
                 else:
