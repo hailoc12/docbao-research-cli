@@ -1,0 +1,33 @@
+<!DOCTYPE>
+<html>
+	<head>
+		<title>Tìm kiếm báo chí</title>
+		<meta charset="utf-8"/>
+		<script src="https://unpkg.com/react@16.7.0/umd/react.development.js"></script>
+		<script src="https://unpkg.com/react-dom@16.7.0/umd/react-dom.development.js"></script>
+		<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+	</head>
+	<body>
+		<div id="search_box"/>
+		<script type="text/babel">
+			class Search_lable extends React.Component{
+				state = {
+					"text": "Tìm kiếm bài báo có chứa"
+				};
+				change_text = () => this.setStage({"text": "hello"});
+				render()
+				{
+					return(<h1> {this.state.text} 
+									<input onChange={this.change_text()}></input>
+								 </h1>
+								)
+				};
+			};
+			ReactDOM.render(
+				<Search_lable text="Tìm kiếm bài báo có chứa"/>,
+				document.getElementById("search_box")
+			);
+		</script>
+
+	</body>
+</html>
