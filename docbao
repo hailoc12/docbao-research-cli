@@ -234,6 +234,8 @@ def view_article(id):
                 if choice in ['c', 'C']:
                     break
         print()
+    else:
+        print("Can't open article id: %s" % id)
 
 def display_list(message, keywords=None, articles=None, full_info=True, filename=None):
     '''
