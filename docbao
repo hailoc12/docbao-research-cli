@@ -90,6 +90,7 @@ class DataManager():
             data = jsonpickle.dumps({'search': search_string, 'full_search': full_search})
             headers = {"Content-type": "application/json", "Authorization": "Bearer " + AUTH_TOKEN}
             response = requests.get(API_url, data=data, headers=headers)
+
             if response.status_code  == 200:
                 result= jsonpickle.decode(str(response.content, encoding="utf-8"))
                 if 'posts' in result: 
@@ -98,7 +99,7 @@ class DataManager():
                     return None
 
             else:
-                print("Error in updating category. Error code: %s" % str(response.status_code))
+                print("Error in searching. Error code: %s" % str(response.status_code))
                 print("Error data below")
                 print(data)
                 return False
